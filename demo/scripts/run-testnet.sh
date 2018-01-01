@@ -33,4 +33,3 @@ do
     --log_level="info"  
 done
 
-docker run --name=watcher --net=babblenet --ip=172.77.5.$(($N+$N+1)) -it mosaicnetworks/watcher

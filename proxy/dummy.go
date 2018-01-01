@@ -6,17 +6,21 @@ import (
 
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/babbleio/babble/hashgraph"
 	bproxy "github.com/babbleio/babble/proxy/babble"
+	"github.com/sirupsen/logrus"
 )
 
 type State struct {
 	logger *logrus.Logger
 }
 
-func (a *State) CommitTx(tx []byte) error {
-	a.logger.WithField("Tx", string(tx)).Debug("CommitTx")
-	a.writeMessage(tx)
+func (a *State) CommitEvent(event hashgraph.Event) error {
+	a.logger.WithField("event", event).Debug("CommitEvent")
+	for _, tx := range event.Body.Transactions {
+		a.writeMessage(tx)
+	}
+
 	return nil
 }
 
@@ -76,9 +80,9 @@ func NewDummySocketClient(clientAddr string, nodeAddr string, logger *logrus.Log
 func (c *DummySocketClient) Run() {
 	for {
 		select {
-		case tx := <-c.babbleProxy.CommitCh():
-			c.logger.Debug("CommitTx")
-			c.state.CommitTx(tx)
+		case event := <-c.babbleProxy.CommitCh():
+			c.logger.Debug("CommitEvent")
+			c.state.CommitEvent(event)
 		}
 	}
 }

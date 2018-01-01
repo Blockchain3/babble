@@ -6,8 +6,36 @@ import (
 	"time"
 
 	"github.com/babbleio/babble/common"
+	"github.com/babbleio/babble/crypto"
+	"github.com/babbleio/babble/hashgraph"
 	aproxy "github.com/babbleio/babble/proxy/app"
 )
+
+func createDummyEvent(t *testing.T) hashgraph.Event {
+
+	privateKey, _ := crypto.GenerateECDSAKey()
+	publicKeyBytes := crypto.FromECDSAPub(&privateKey.PublicKey)
+
+	body := hashgraph.EventBody{}
+	body.Transactions = [][]byte{[]byte("abc"), []byte("def")}
+	body.Parents = []string{"self", "other"}
+	body.Creator = publicKeyBytes
+	body.Timestamp = time.Now().UTC()
+
+	event := hashgraph.Event{Body: body}
+	if err := event.Sign(privateKey); err != nil {
+		t.Fatalf("Error signing Event: %s", err)
+	}
+	res, err := event.Verify()
+	if err != nil {
+		t.Fatalf("Error verifying signature: %s", err)
+	}
+	if !res {
+		t.Fatalf("Verify returned false")
+	}
+
+	return event
+}
 
 func TestSokcetProxyServer(t *testing.T) {
 	clientAddr := "127.0.0.1:9990"
@@ -53,21 +81,21 @@ func TestSocketProxyClient(t *testing.T) {
 	}
 	clientCh := dummyClient.babbleProxy.CommitCh()
 
-	tx := []byte("the test transaction")
+	event := createDummyEvent(t)
 
 	// Listen for a request
 	go func() {
 		select {
-		case st := <-clientCh:
-			if !reflect.DeepEqual(st, tx) {
-				t.Fatalf("tx mismatch: %#v %#v", tx, st)
+		case se := <-clientCh:
+			if !reflect.DeepEqual(se, event) {
+				t.Fatalf("event mismatch: %#v %#v", se, event)
 			}
 		case <-time.After(200 * time.Millisecond):
 			t.Fatalf("timeout")
 		}
 	}()
 
-	err = proxy.CommitTx(tx)
+	err = proxy.CommitEvent(event)
 	if err != nil {
 		t.Fatal(err)
 	}

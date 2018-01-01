@@ -1,11 +1,13 @@
 package proxy
 
+import "github.com/babbleio/babble/hashgraph"
+
 type AppProxy interface {
 	SubmitCh() chan []byte
-	CommitTx(tx []byte) error
+	CommitEvent(event hashgraph.Event) error
 }
 
 type BabbleProxy interface {
-	CommitCh() chan []byte
+	CommitCh() chan hashgraph.Event
 	SubmitTx(tx []byte) error
 }

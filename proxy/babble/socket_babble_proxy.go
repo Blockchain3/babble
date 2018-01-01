@@ -3,6 +3,8 @@ package babble
 import (
 	"fmt"
 	"time"
+
+	"github.com/babbleio/babble/hashgraph"
 )
 
 type SocketBabbleProxy struct {
@@ -34,7 +36,7 @@ func NewSocketBabbleProxy(nodeAddr string, bindAddr string, timeout time.Duratio
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Implement BabbleProxy interface
 
-func (p *SocketBabbleProxy) CommitCh() chan []byte {
+func (p *SocketBabbleProxy) CommitCh() chan hashgraph.Event {
 	return p.server.commitCh
 }
 

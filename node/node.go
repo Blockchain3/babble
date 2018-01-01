@@ -487,10 +487,8 @@ func (n *Node) sync(events []hg.WireEvent) error {
 
 func (n *Node) commit(events []hg.Event) error {
 	for _, ev := range events {
-		for _, tx := range ev.Transactions() {
-			if err := n.proxy.CommitTx(tx); err != nil {
-				return err
-			}
+		if err := n.proxy.CommitEvent(ev); err != nil {
+			return err
 		}
 	}
 	return nil

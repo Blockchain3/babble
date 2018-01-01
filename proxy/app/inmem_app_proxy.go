@@ -1,6 +1,9 @@
 package app
 
-import "github.com/sirupsen/logrus"
+import (
+	"github.com/babbleio/babble/hashgraph"
+	"github.com/sirupsen/logrus"
+)
 
 //InmemProxy is used for testing
 type InmemAppProxy struct {
@@ -25,9 +28,9 @@ func (p *InmemAppProxy) SubmitCh() chan []byte {
 	return p.submitCh
 }
 
-func (p *InmemAppProxy) CommitTx(tx []byte) error {
-	p.logger.WithField("tx", tx).Debug("InmemProxy CommitTx")
-	p.commitedTxs = append(p.commitedTxs, tx)
+func (p *InmemAppProxy) CommitEvent(event hashgraph.Event) error {
+	p.logger.WithField("event", event).Debug("InmemProxy CommitEvent")
+	p.commitedTxs = append(p.commitedTxs, event.Body.Transactions...)
 	return nil
 }
 

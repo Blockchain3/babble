@@ -33,7 +33,7 @@ func (p *SocketBabbleProxyClient) SubmitTx(tx []byte) (*bool, error) {
 		return nil, err
 	}
 	var ack bool
-	err = rpcConn.Call("Babble.SubmitTx", tx, &ack)
+	err = rpcConn.Call("Babble.SubmitTx", &tx, &ack)
 	if err != nil {
 		return nil, err
 	}
